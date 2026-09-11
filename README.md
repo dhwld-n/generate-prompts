@@ -30,7 +30,7 @@ git push -u origin main
 2. 방금 올린 GitHub 저장소 선택 → Import
 3. **Environment Variables**에 아래 값 추가:
    - `GEMINI_API_KEY` = 1단계에서 발급받은 키
-   - (선택) `GEMINI_MODEL` = 사용할 모델명 (기본값 `gemini-2.5-flash`)
+   - (선택) `GEMINI_MODEL` = 사용할 모델명 (기본값 `gemini-3.6-flash`)
 4. "Deploy" 클릭 → 완료되면 `https://<프로젝트명>.vercel.app` 주소로 접속 가능
 
 빌드 설정은 따로 건드릴 필요 없습니다. Vercel이 `index.html`은 정적 파일로, `api/generate.js`는 서버리스 함수로 자동 인식합니다.

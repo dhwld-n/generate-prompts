@@ -67,7 +67,7 @@ ${platformLines}
 
 각 프롬프트는 실제로 해당 플랫폼에 바로 붙여넣어 쓸 수 있는 완성된 형태여야 하며, 설명이나 따옴표 없이 프롬프트 본문만 담아야 한다. 이미지·영상 플랫폼의 경우 관례에 맞는 파라미터(비율, 스타일 태그 등)를 포함하라.`;
 
-  const model = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+  const model = process.env.GEMINI_MODEL || 'gemini-3.6-flash';
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
   const geminiBody = {
