@@ -1,0 +1,6 @@
+{
+  "name": "prompt-interpreter",
+  "version": "1.0.0",
+  "private": true,
+  "description": "생성형 AI별 프롬프트 문법에 맞춰 아이디어를 통역해주는 웹앱 (Gemini API 기반)"
+}

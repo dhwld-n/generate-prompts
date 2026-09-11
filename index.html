@@ -1,0 +1,543 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>프롬프트 통역소</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+  :root{
+    --bg:#eceef0;
+    --surface:#ffffff;
+    --surface-2:#f4f5f7;
+    --ink:#14171f;
+    --ink-soft:#4b5160;
+    --ink-faint:#7b8191;
+    --line:#d7dae0;
+    --line-soft:#e4e6ea;
+    --accent:#3b4cca;
+    --accent-ink:#2331a6;
+    --accent-soft:#e7e9fb;
+    --brass:#a8792c;
+    --brass-soft:#f1e6cd;
+    --good:#1f7a55;
+    --danger:#b4382f;
+    --danger-soft:#fbe9e7;
+    --shadow: 0 1px 2px rgba(20,23,31,.04), 0 8px 24px -12px rgba(20,23,31,.18);
+  }
+
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#10121a;
+      --surface:#171a24;
+      --surface-2:#1b1e2a;
+      --ink:#edeef3;
+      --ink-soft:#a6acbc;
+      --ink-faint:#767c8d;
+      --line:#2a2e3c;
+      --line-soft:#20232f;
+      --accent:#8a97ff;
+      --accent-ink:#c4cbff;
+      --accent-soft:#232a52;
+      --brass:#e0aa55;
+      --brass-soft:#372b13;
+      --good:#4fd198;
+      --danger:#ff8f87;
+      --danger-soft:#3a1f1c;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 28px -12px rgba(0,0,0,.55);
+    }
+  }
+  html[data-theme="dark"]{
+    --bg:#10121a;
+    --surface:#171a24;
+    --surface-2:#1b1e2a;
+    --ink:#edeef3;
+    --ink-soft:#a6acbc;
+    --ink-faint:#767c8d;
+    --line:#2a2e3c;
+    --line-soft:#20232f;
+    --accent:#8a97ff;
+    --accent-ink:#c4cbff;
+    --accent-soft:#232a52;
+    --brass:#e0aa55;
+    --brass-soft:#372b13;
+    --good:#4fd198;
+    --danger:#ff8f87;
+    --danger-soft:#3a1f1c;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 28px -12px rgba(0,0,0,.55);
+  }
+
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; }
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Work Sans','Malgun Gothic','Apple SD Gothic Neo',sans-serif;
+    font-size:15px;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3{ font-family:'Fraunces','Malgun Gothic',serif; text-wrap:balance; margin:0; }
+  ::selection{ background:var(--accent-soft); }
+  :focus-visible{ outline:2px solid var(--accent); outline-offset:2px; border-radius:4px; }
+
+  .page{ max-width:1080px; margin:0 auto; padding:40px 24px 64px; }
+
+  header.masthead{ margin-bottom:32px; }
+  .eyebrow{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11.5px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--brass);
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-bottom:10px;
+  }
+  .eyebrow::before{ content:''; width:16px; height:1px; background:var(--brass); display:inline-block; }
+  h1.title{ font-size:clamp(28px,4vw,38px); font-weight:600; color:var(--ink); }
+  h1.title em{ font-style:italic; color:var(--accent); }
+  .subtitle{ margin-top:10px; max-width:60ch; color:var(--ink-soft); font-size:15.5px; }
+
+  .layout{ display:grid; grid-template-columns:380px 1fr; gap:22px; align-items:start; }
+  @media (max-width:860px){ .layout{ grid-template-columns:1fr; } }
+
+  .panel{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:14px;
+    box-shadow:var(--shadow);
+  }
+
+  .desk{ padding:22px 22px 20px; position:sticky; top:20px; }
+  @media (max-width:860px){ .desk{ position:static; } }
+  .desk h2{ font-size:18px; font-weight:600; margin-bottom:4px; }
+  .desk .desk-sub{ color:var(--ink-faint); font-size:13px; margin-bottom:18px; }
+
+  label.field-label{
+    display:block; font-size:12.5px; font-weight:600; color:var(--ink-soft);
+    letter-spacing:.02em; margin-bottom:6px;
+  }
+  .field{ margin-bottom:18px; }
+  textarea, input[type="text"]{
+    width:100%;
+    background:var(--surface-2);
+    border:1px solid var(--line);
+    border-radius:9px;
+    padding:10px 12px;
+    color:var(--ink);
+    font-family:inherit;
+    font-size:14px;
+    resize:vertical;
+    transition:border-color .15s;
+  }
+  textarea{ min-height:88px; }
+  textarea:hover, input[type="text"]:hover{ border-color:var(--ink-faint); }
+  textarea:focus, input[type="text"]:focus{ border-color:var(--accent); outline:none; box-shadow:0 0 0 3px var(--accent-soft); }
+  textarea::placeholder, input::placeholder{ color:var(--ink-faint); }
+
+  .toggle-row{
+    display:flex; align-items:center; gap:10px; margin-bottom:18px;
+    padding:10px 12px; background:var(--surface-2); border:1px solid var(--line); border-radius:9px;
+  }
+  .toggle-row input{ accent-color:var(--accent); width:16px; height:16px; margin:0; }
+  .toggle-row label{ font-size:13.5px; color:var(--ink-soft); cursor:pointer; }
+
+  .group-title{
+    font-size:11.5px; font-weight:600; letter-spacing:.06em; text-transform:uppercase;
+    color:var(--ink-faint); margin:14px 0 8px;
+  }
+  .group-title:first-of-type{ margin-top:0; }
+  .chips{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:4px; }
+  .chip{ position:relative; }
+  .chip input{ position:absolute; opacity:0; width:100%; height:100%; margin:0; cursor:pointer; }
+  .chip span{
+    display:inline-flex; align-items:center; gap:5px;
+    padding:6px 11px; border-radius:999px;
+    border:1px solid var(--line);
+    background:var(--surface-2);
+    font-size:12.5px; color:var(--ink-soft);
+    cursor:pointer; transition:all .12s;
+    user-select:none;
+  }
+  .chip input:checked + span{
+    background:var(--accent); border-color:var(--accent); color:#fff;
+  }
+  .chip input:focus-visible + span{ outline:2px solid var(--accent); outline-offset:2px; }
+  .chip:hover span{ border-color:var(--accent); }
+
+  .warn{ font-size:12.5px; color:var(--danger); margin-top:8px; min-height:16px; }
+
+  .submit-btn{
+    width:100%; margin-top:14px;
+    background:var(--accent); color:#fff; border:none;
+    padding:12px 16px; border-radius:9px;
+    font-size:14.5px; font-weight:600; font-family:inherit;
+    cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;
+    transition:background .15s;
+  }
+  .submit-btn:hover{ background:var(--accent-ink); }
+  .submit-btn:disabled{ background:var(--ink-faint); cursor:not-allowed; }
+  .stop-btn{
+    width:100%; margin-top:8px; background:transparent; border:1px solid var(--line);
+    color:var(--ink-soft); padding:9px 16px; border-radius:9px; font-family:inherit;
+    font-size:13px; cursor:pointer;
+  }
+  .stop-btn:hover{ border-color:var(--danger); color:var(--danger); }
+
+  .spinner{
+    width:14px; height:14px; border-radius:50%;
+    border:2px solid rgba(255,255,255,.4); border-top-color:#fff;
+    animation:spin .7s linear infinite;
+  }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce){ .spinner{ animation:none; } }
+
+  .results{ padding:20px 22px; min-height:200px; }
+  .results-head{ display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:14px; flex-wrap:wrap; }
+  .results-head h2{ font-size:18px; font-weight:600; }
+  .sample-flag{
+    font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:.06em;
+    color:var(--brass); background:var(--brass-soft); padding:4px 9px; border-radius:6px;
+    text-transform:uppercase;
+  }
+  .status-flag{
+    font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:.06em;
+    color:var(--good); background:transparent; padding:4px 0; text-transform:uppercase;
+  }
+
+  .banner{
+    font-size:13px; color:var(--ink-soft); background:var(--surface-2);
+    border:1px solid var(--line); border-radius:9px; padding:10px 13px; margin-bottom:16px;
+  }
+  .banner strong{ color:var(--ink); }
+
+  .tickets{ display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:14px; }
+
+  .ticket{
+    border:1px solid var(--line); border-radius:12px; background:var(--surface-2);
+    padding:16px 16px 14px; position:relative; overflow:hidden;
+  }
+  .ticket.pending{ opacity:.6; }
+  .ticket-top{ display:flex; align-items:flex-start; justify-content:space-between; gap:10px; margin-bottom:10px; }
+  .ticket-plat{ font-weight:600; font-size:15px; }
+  .ticket-group{ font-size:11px; color:var(--ink-faint); letter-spacing:.04em; text-transform:uppercase; margin-top:2px; }
+  .stamp{
+    flex:none; width:44px; height:44px; border-radius:50%;
+    border:1.5px dashed var(--brass); color:var(--brass);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'JetBrains Mono',monospace; font-size:9.5px; letter-spacing:.02em;
+    text-align:center; transform:rotate(-8deg); line-height:1.15; flex-wrap:wrap;
+  }
+  .ticket-body{
+    font-family:'JetBrains Mono',monospace; font-size:12.3px; line-height:1.55;
+    color:var(--ink); background:var(--surface); border:1px solid var(--line-soft);
+    border-radius:8px; padding:11px 12px; white-space:pre-wrap; word-break:break-word;
+    max-height:220px; overflow-y:auto; margin-bottom:10px;
+  }
+  .ticket-body.skeleton{ color:transparent; }
+  .skeleton-line{ height:10px; background:var(--line-soft); border-radius:4px; margin-bottom:7px; }
+  .skeleton-line:nth-child(2){ width:85%; }
+  .skeleton-line:nth-child(3){ width:60%; }
+
+  .perf{ border-top:1px dashed var(--line); margin:0 -16px 10px; }
+  .ticket-foot{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  .dialect{ font-size:11.5px; color:var(--ink-faint); line-height:1.4; max-width:68%; }
+  .copy-btn{
+    flex:none; display:flex; align-items:center; gap:5px;
+    background:transparent; border:1px solid var(--line); color:var(--ink-soft);
+    font-family:inherit; font-size:12px; padding:6px 10px; border-radius:7px; cursor:pointer;
+  }
+  .copy-btn:hover{ border-color:var(--accent); color:var(--accent); }
+  .copy-btn.copied{ border-color:var(--good); color:var(--good); }
+  .copy-btn svg{ width:12px; height:12px; }
+
+  .error-note{
+    font-size:13px; color:var(--danger); background:var(--danger-soft);
+    border:1px solid var(--danger); border-radius:9px; padding:11px 13px; margin-bottom:14px;
+  }
+  .retry-btn{
+    margin-top:8px; background:var(--danger); color:#fff; border:none;
+    padding:7px 13px; border-radius:7px; font-size:12.5px; cursor:pointer; font-family:inherit;
+  }
+
+  footer.fine{ margin-top:26px; font-size:12px; color:var(--ink-faint); text-align:center; }
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="masthead">
+    <div class="eyebrow">Multi-Dialect Prompt Desk</div>
+    <h1 class="title">프롬프트 <em>통역소</em></h1>
+    <p class="subtitle">하고 싶은 것을 한 번만 적으면, 이미지·영상·음악·텍스트 생성 AI마다 다른 프롬프트 문법에 맞춰 통역해 드립니다.</p>
+  </header>
+
+  <div class="layout">
+    <div class="panel desk">
+      <h2>접수대</h2>
+      <div class="desk-sub">무엇을 만들고 싶은지 적어주세요</div>
+
+      <div class="field">
+        <label class="field-label" for="idea">무엇을 만들고 싶나요?</label>
+        <textarea id="idea" maxlength="800" placeholder="예: 비 오는 밤 골목, 네온사인 아래 우산을 쓴 고양이">비 오는 밤 골목, 네온사인 아래 우산을 쓴 고양이</textarea>
+      </div>
+
+      <div class="field">
+        <label class="field-label" for="style">원하는 분위기 / 스타일 (선택)</label>
+        <input id="style" type="text" maxlength="300" placeholder="예: 시네마틱, 파스텔톤 조명" value="시네마틱, 파스텔톤 조명">
+      </div>
+
+      <div class="toggle-row">
+        <input id="english" type="checkbox" checked>
+        <label for="english">이미지·영상 플랫폼용 프롬프트는 영어로 작성 (결과가 더 좋은 경우가 많음)</label>
+      </div>
+
+      <label class="field-label">어떤 AI에 맞춰 통역할까요?</label>
+      <div id="chip-groups"></div>
+      <div class="warn" id="warn"></div>
+
+      <button class="submit-btn" id="submit-btn">번역 요청</button>
+      <button class="stop-btn" id="stop-btn" hidden>생성 중지</button>
+    </div>
+
+    <div class="panel results">
+      <div class="results-head">
+        <h2>번역 결과</h2>
+        <span id="results-flag" class="sample-flag">예시</span>
+      </div>
+      <div id="results-body"></div>
+    </div>
+  </div>
+
+  <footer class="fine">입력한 내용은 서버에 저장되지 않으며, 요청 처리를 위해 Google Gemini API로 전달됩니다.</footer>
+</div>
+
+<script>
+(function(){
+  const PLATFORMS = [
+    { id:'midjourney', group:'이미지', label:'Midjourney', dialect:'쉼표로 나열한 키워드 + --ar, --v 같은 파라미터', stamp:'IMG' },
+    { id:'dalle',      group:'이미지', label:'DALL·E / GPT 이미지', dialect:'장면을 그대로 서술하는 자연어 문장', stamp:'IMG' },
+    { id:'sdxl',       group:'이미지', label:'Stable Diffusion', dialect:'주제·스타일·품질 태그 + negative prompt', stamp:'IMG' },
+    { id:'firefly',    group:'이미지', label:'Adobe Firefly', dialect:'자연어 설명 + 효과·스타일 키워드', stamp:'IMG' },
+    { id:'sora',       group:'영상', label:'Sora', dialect:'카메라 워크를 포함한 영화적 지문', stamp:'VID' },
+    { id:'runway',     group:'영상', label:'Runway Gen-3', dialect:'샷 구성과 카메라 움직임을 짧은 문장으로', stamp:'VID' },
+    { id:'kling',      group:'영상', label:'Kling', dialect:'동작·전개 중심의 시네마틱 문장', stamp:'VID' },
+    { id:'suno',       group:'음악', label:'Suno', dialect:'[Verse]/[Chorus] 구조 태그 + 장르·악기 스타일 태그', stamp:'AUD' },
+    { id:'udio',       group:'음악', label:'Udio', dialect:'장르·무드·보컬 스타일을 짧은 태그로 나열', stamp:'AUD' },
+    { id:'chatgpt',    group:'텍스트', label:'ChatGPT', dialect:'역할·맥락·출력형식을 갖춘 지시문', stamp:'TXT' },
+    { id:'claude',     group:'텍스트', label:'Claude', dialect:'명확한 역할과 단계별 지시, 출력 형식 지정', stamp:'TXT' },
+    { id:'gemini',     group:'텍스트', label:'Gemini', dialect:'목표와 제약을 명시한 구조화 지시문', stamp:'TXT' },
+  ];
+  const GROUP_ORDER = ['이미지','영상','음악','텍스트'];
+  const DEFAULT_SELECTED = ['midjourney','chatgpt','suno'];
+
+  const EXAMPLE_RESULTS = {
+    midjourney: 'a cat holding a tiny umbrella walking through a rain-soaked neon-lit alley at night, cinematic pastel lighting, reflections on wet pavement, shallow depth of field, ultra detailed --ar 3:2 --v 6',
+    chatgpt: '너는 감성적인 단편 소설 작가야. 비 오는 밤, 네온사인이 비치는 골목에서 우산을 쓴 고양이가 걸어가는 장면을 시네마틱하고 파스텔톤인 분위기로 300자 내외의 짧은 글로 묘사해줘. 문장은 감각적이고 은유적으로 써줘.',
+    suno: '[Style] lo-fi jazz, rainy night ambience, soft piano, pastel nostalgic mood\n[Verse]\n네온 불빛 젖은 골목 위로\n우산 쓴 고양이 걸어가네\n빗소리 사이 작은 발걸음\n조용히 밤을 건너가네',
+  };
+
+  const chipGroupsEl = document.getElementById('chip-groups');
+  const warnEl = document.getElementById('warn');
+  const submitBtn = document.getElementById('submit-btn');
+  const stopBtn = document.getElementById('stop-btn');
+  const resultsBody = document.getElementById('results-body');
+  const resultsFlag = document.getElementById('results-flag');
+  const ideaEl = document.getElementById('idea');
+  const styleEl = document.getElementById('style');
+  const englishEl = document.getElementById('english');
+
+  function buildChips(){
+    GROUP_ORDER.forEach(group => {
+      const title = document.createElement('div');
+      title.className = 'group-title';
+      title.textContent = group;
+      chipGroupsEl.appendChild(title);
+
+      const row = document.createElement('div');
+      row.className = 'chips';
+      PLATFORMS.filter(p => p.group === group).forEach(p => {
+        const label = document.createElement('label');
+        label.className = 'chip';
+        const input = document.createElement('input');
+        input.type = 'checkbox';
+        input.value = p.id;
+        input.name = 'platform';
+        input.checked = DEFAULT_SELECTED.includes(p.id);
+        const span = document.createElement('span');
+        span.textContent = p.label;
+        label.appendChild(input);
+        label.appendChild(span);
+        row.appendChild(label);
+      });
+      chipGroupsEl.appendChild(row);
+    });
+  }
+  buildChips();
+
+  function selectedPlatforms(){
+    return Array.from(chipGroupsEl.querySelectorAll('input[name="platform"]:checked')).map(i =>
+      PLATFORMS.find(p => p.id === i.value)
+    );
+  }
+
+  function copyIcon(){
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2" fill="none"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" fill="none"/></svg>';
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  }
+
+  function ticketMarkup(p, promptText, pending){
+    const body = pending
+      ? '<div class="skeleton-line"></div><div class="skeleton-line"></div><div class="skeleton-line"></div>'
+      : escapeHtml(promptText);
+    return (
+      '<div class="ticket' + (pending ? ' pending' : '') + '" data-id="' + p.id + '">' +
+        '<div class="ticket-top">' +
+          '<div><div class="ticket-plat">' + p.label + '</div><div class="ticket-group">' + p.group + '</div></div>' +
+          '<div class="stamp">' + p.stamp + '</div>' +
+        '</div>' +
+        '<div class="ticket-body' + (pending ? ' skeleton' : '') + '">' + body + '</div>' +
+        '<div class="perf"></div>' +
+        '<div class="ticket-foot">' +
+          '<div class="dialect">' + p.dialect + '</div>' +
+          (pending ? '' : '<button class="copy-btn" type="button">' + copyIcon() + '<span>복사</span></button>') +
+        '</div>' +
+      '</div>'
+    );
+  }
+
+  function renderExample(){
+    resultsFlag.textContent = '예시';
+    resultsFlag.className = 'sample-flag';
+    const platforms = DEFAULT_SELECTED.map(id => PLATFORMS.find(p => p.id === id));
+    resultsBody.innerHTML =
+      '<div class="banner"><strong>예시입니다.</strong> 왼쪽 접수대에 내용을 입력하고 "번역 요청"을 누르면 실제로 생성된 결과로 바뀝니다.</div>' +
+      '<div class="tickets">' + platforms.map(p => ticketMarkup(p, EXAMPLE_RESULTS[p.id], false)).join('') + '</div>';
+    wireCopyButtons();
+  }
+
+  function renderPending(platforms){
+    resultsFlag.textContent = '생성 중';
+    resultsFlag.className = 'status-flag';
+    resultsBody.innerHTML = '<div class="tickets">' + platforms.map(p => ticketMarkup(p, '', true)).join('') + '</div>';
+  }
+
+  function renderResults(platforms, byId){
+    resultsFlag.textContent = '완료';
+    resultsFlag.className = 'status-flag';
+    resultsBody.innerHTML = '<div class="tickets">' + platforms.map(p =>
+      ticketMarkup(p, byId[p.id] || '(응답에 이 플랫폼의 결과가 없습니다)', false)
+    ).join('') + '</div>';
+    wireCopyButtons();
+  }
+
+  function renderError(message, retryable){
+    resultsFlag.textContent = '오류';
+    resultsFlag.className = 'status-flag';
+    resultsBody.innerHTML =
+      '<div class="error-note">' + escapeHtml(message) +
+        (retryable ? '<div><button class="retry-btn" id="retry-btn" type="button">다시 시도</button></div>' : '') +
+      '</div>';
+    if (retryable){
+      const btn = document.getElementById('retry-btn');
+      if (btn) btn.addEventListener('click', runGeneration);
+    }
+  }
+
+  function wireCopyButtons(){
+    resultsBody.querySelectorAll('.ticket').forEach(ticket => {
+      const btn = ticket.querySelector('.copy-btn');
+      if (!btn) return;
+      btn.addEventListener('click', async () => {
+        const text = ticket.querySelector('.ticket-body').textContent;
+        try {
+          await navigator.clipboard.writeText(text);
+          btn.classList.add('copied');
+          btn.querySelector('span').textContent = '복사됨';
+          setTimeout(() => { btn.classList.remove('copied'); btn.querySelector('span').textContent = '복사'; }, 1600);
+        } catch(e) {
+          btn.querySelector('span').textContent = '복사 실패';
+        }
+      });
+    });
+  }
+
+  renderExample();
+
+  let currentController = null;
+
+  function setBusy(isBusy){
+    submitBtn.disabled = isBusy;
+    submitBtn.innerHTML = isBusy ? '<span class="spinner"></span> 번역 중…' : '번역 요청';
+    stopBtn.hidden = !isBusy;
+  }
+
+  async function runGeneration(){
+    warnEl.textContent = '';
+    const idea = ideaEl.value.trim();
+    const style = styleEl.value.trim();
+    const platforms = selectedPlatforms();
+
+    if (!idea){
+      warnEl.textContent = '무엇을 만들고 싶은지 먼저 적어주세요.';
+      ideaEl.focus();
+      return;
+    }
+    if (platforms.length === 0){
+      warnEl.textContent = '통역할 AI를 하나 이상 선택해주세요.';
+      return;
+    }
+
+    renderPending(platforms);
+    setBusy(true);
+    currentController = new AbortController();
+
+    try {
+      const res = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          idea,
+          style,
+          useEnglish: englishEl.checked,
+          platforms: platforms.map(p => ({ id: p.id, label: p.label, dialect: p.dialect })),
+        }),
+        signal: currentController.signal,
+      });
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok){
+        renderError(data.error || '생성 중 문제가 발생했어요. 다시 시도해주세요.', true);
+        return;
+      }
+
+      const byId = {};
+      (data.results || []).forEach(row => {
+        if (row && typeof row.id === 'string' && typeof row.prompt === 'string'){
+          byId[row.id] = row.prompt;
+        }
+      });
+      renderResults(platforms, byId);
+    } catch(e) {
+      if (e && e.name === 'AbortError'){
+        renderExample();
+      } else {
+        renderError('네트워크 오류가 발생했어요. 연결을 확인하고 다시 시도해주세요.', true);
+      }
+    } finally {
+      setBusy(false);
+      currentController = null;
+    }
+  }
+
+  submitBtn.addEventListener('click', runGeneration);
+  stopBtn.addEventListener('click', () => { if (currentController) currentController.abort(); });
+})();
+</script>
+</body>
+</html>
