@@ -196,6 +196,17 @@
   }
   .picked-pill button:hover{ background:rgba(0,0,0,.08); }
 
+  .mode-tabs{
+    display:flex; gap:6px; margin-bottom:18px; padding:4px;
+    background:var(--surface-2); border:1px solid var(--line); border-radius:11px;
+  }
+  .mode-tab{
+    flex:1 1 0; padding:9px 10px; border-radius:8px; border:none; background:transparent;
+    color:var(--ink-soft); font-family:inherit; font-size:13px; font-weight:600; cursor:pointer; transition:all .12s;
+  }
+  .mode-tab:hover{ color:var(--ink); }
+  .mode-tab.active{ background:var(--surface); color:var(--accent-ink); box-shadow:var(--shadow); }
+
   .warn{ font-size:12.5px; color:var(--danger); margin-top:8px; min-height:16px; }
 
   .submit-btn{
@@ -307,39 +318,73 @@
       <h2>접수대</h2>
       <div class="desk-sub">무엇을 만들고 싶은지 적어주세요</div>
 
-      <div class="field">
-        <label class="field-label" for="idea">무엇을 만들고 싶나요?</label>
-        <textarea id="idea" maxlength="800" placeholder="예: 비 오는 밤 골목, 네온사인 아래 우산을 쓴 고양이">비 오는 밤 골목, 네온사인 아래 우산을 쓴 고양이</textarea>
+      <div class="mode-tabs" id="mode-tabs">
+        <button type="button" class="mode-tab active" data-mode="general">일반 번역</button>
+        <button type="button" class="mode-tab" data-mode="character">캐릭터 프사 만들기</button>
       </div>
 
-      <div class="field">
-        <label class="field-label" for="style">원하는 분위기 / 스타일 (선택)</label>
-        <input id="style" type="text" maxlength="300" placeholder="예: 시네마틱, 파스텔톤 조명" value="시네마틱, 파스텔톤 조명">
+      <div id="panel-general">
+        <div class="field">
+          <label class="field-label" for="idea">무엇을 만들고 싶나요?</label>
+          <textarea id="idea" maxlength="800" placeholder="예: 비 오는 밤 골목, 네온사인 아래 우산을 쓴 고양이">비 오는 밤 골목, 네온사인 아래 우산을 쓴 고양이</textarea>
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="style">원하는 분위기 / 스타일 (선택)</label>
+          <input id="style" type="text" maxlength="300" placeholder="예: 시네마틱, 파스텔톤 조명" value="시네마틱, 파스텔톤 조명">
+        </div>
+
+        <div class="toggle-row">
+          <input id="english" type="checkbox" checked>
+          <label for="english">이미지·영상 플랫폼용 프롬프트는 영어로 작성 (결과가 더 좋은 경우가 많음)</label>
+        </div>
+
+        <label class="field-label">어떤 AI에 맞춰 통역할까요?</label>
+        <div class="cat-tabs" id="cat-tabs"></div>
+        <div class="chips" id="chip-list"></div>
+
+        <div class="picked">
+          <div class="picked-label">선택됨</div>
+          <div id="picked-pills"></div>
+        </div>
+
+        <div class="warn" id="warn"></div>
+
+        <button class="submit-btn" id="submit-btn">번역 요청</button>
+        <button class="stop-btn" id="stop-btn" hidden>생성 중지</button>
       </div>
 
-      <div class="toggle-row">
-        <input id="english" type="checkbox" checked>
-        <label for="english">이미지·영상 플랫폼용 프롬프트는 영어로 작성 (결과가 더 좋은 경우가 많음)</label>
+      <div id="panel-character" hidden>
+        <div class="field">
+          <label class="field-label" for="char-subject">어떤 캐릭터/사진을 변환할까요?</label>
+          <textarea id="char-subject" maxlength="500" placeholder="예: 메이플스토리 원작 캐릭터 '아델', 또는 첨부할 사진 속 인물">첨부할 사진 속 인물</textarea>
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="char-style">어떤 스타일/세계관으로 만들까요?</label>
+          <input id="char-style" list="char-style-options" type="text" maxlength="200" placeholder="예: 메이플스토리 도트 아바타" value="메이플스토리 도트 아바타">
+          <datalist id="char-style-options">
+            <option value="메이플스토리 도트 아바타">
+            <option value="포켓몬풍 캐릭터">
+            <option value="지브리풍 캐릭터">
+            <option value="디즈니 픽사 3D 캐릭터">
+            <option value="심슨 가족 스타일">
+            <option value="2000년대 일본 TV 애니메이션 마스코트">
+          </datalist>
+        </div>
+
+        <div class="banner"><strong>참고.</strong> 이 프롬프트는 사진을 함께 첨부했을 때 가장 잘 작동해요. ChatGPT에서 변환하고 싶은 사진을 먼저 올린 뒤, 생성된 프롬프트를 이어서 붙여넣으세요.</div>
+
+        <div class="warn" id="char-warn"></div>
+
+        <button class="submit-btn" id="char-submit-btn">프롬프트 만들기</button>
+        <button class="stop-btn" id="char-stop-btn" hidden>생성 중지</button>
       </div>
-
-      <label class="field-label">어떤 AI에 맞춰 통역할까요?</label>
-      <div class="cat-tabs" id="cat-tabs"></div>
-      <div class="chips" id="chip-list"></div>
-
-      <div class="picked">
-        <div class="picked-label">선택됨</div>
-        <div id="picked-pills"></div>
-      </div>
-
-      <div class="warn" id="warn"></div>
-
-      <button class="submit-btn" id="submit-btn">번역 요청</button>
-      <button class="stop-btn" id="stop-btn" hidden>생성 중지</button>
     </div>
 
     <div class="panel results">
       <div class="results-head">
-        <h2>번역 결과</h2>
+        <h2 id="results-title">번역 결과</h2>
         <span id="results-flag" class="sample-flag">예시</span>
       </div>
       <div id="results-body"></div>
@@ -382,9 +427,19 @@
   const stopBtn = document.getElementById('stop-btn');
   const resultsBody = document.getElementById('results-body');
   const resultsFlag = document.getElementById('results-flag');
+  const resultsTitleEl = document.getElementById('results-title');
   const ideaEl = document.getElementById('idea');
   const styleEl = document.getElementById('style');
   const englishEl = document.getElementById('english');
+
+  const modeTabsEl = document.getElementById('mode-tabs');
+  const panelGeneralEl = document.getElementById('panel-general');
+  const panelCharacterEl = document.getElementById('panel-character');
+  const charSubjectEl = document.getElementById('char-subject');
+  const charStyleEl = document.getElementById('char-style');
+  const charWarnEl = document.getElementById('char-warn');
+  const charSubmitBtn = document.getElementById('char-submit-btn');
+  const charStopBtn = document.getElementById('char-stop-btn');
 
   const selectedIds = new Set(DEFAULT_SELECTED);
   let activeGroup = GROUP_ORDER[0];
@@ -554,7 +609,80 @@
     });
   }
 
-  renderExample();
+  function renderCharacterExample(){
+    resultsFlag.textContent = '예시';
+    resultsFlag.className = 'sample-flag';
+    resultsBody.innerHTML =
+      '<div class="banner"><strong>안내.</strong> 왼쪽에 변환할 캐릭터·사진과 원하는 스타일을 적고 "프롬프트 만들기"를 누르면, 아래와 같은 구조의 상세한 변환 프롬프트가 만들어집니다.</div>' +
+      '<div class="ticket">' +
+        '<div class="ticket-top">' +
+          '<div><div class="ticket-plat">ChatGPT 이미지</div><div class="ticket-group">캐릭터 변환</div></div>' +
+          '<div class="stamp">IMG</div>' +
+        '</div>' +
+        '<div class="ticket-body">역할 정의 — 당신은 [스타일] 전문 아트 디렉터다\n\n[입력]\n캐릭터명 또는 사진 첨부\n\n[작업]\n원본 특징 분석 (헤어·색상·표정·의상 등)\n\n[스타일 SPEC]\n목표 세계관의 구조·비율·채색 규칙\n\n[출력 조건]\n정사각형, 단색 배경, 인물 단독, 프로필용 구도\n\n[절대 금지]\n혼동되기 쉬운 다른 스타일·요소 나열</div>' +
+        '<div class="perf"></div>' +
+        '<div class="ticket-foot"><div class="dialect">역할 정의 → 입력 → 분석 → 스타일 규격 → 출력 조건 → 금지 목록 순으로 구성됩니다</div></div>' +
+      '</div>';
+  }
+
+  function renderCharacterPending(){
+    resultsFlag.textContent = '생성 중';
+    resultsFlag.className = 'status-flag';
+    resultsBody.innerHTML = '<div class="tickets">' +
+      '<div class="ticket pending">' +
+        '<div class="ticket-top"><div><div class="ticket-plat">ChatGPT 이미지</div><div class="ticket-group">캐릭터 변환</div></div><div class="stamp">IMG</div></div>' +
+        '<div class="ticket-body skeleton"><div class="skeleton-line"></div><div class="skeleton-line"></div><div class="skeleton-line"></div></div>' +
+      '</div>' +
+    '</div>';
+  }
+
+  function renderCharacterResult(text){
+    resultsFlag.textContent = '완료';
+    resultsFlag.className = 'status-flag';
+    resultsBody.innerHTML = '<div class="tickets">' +
+      '<div class="ticket" data-id="char-result">' +
+        '<div class="ticket-top"><div><div class="ticket-plat">ChatGPT 이미지</div><div class="ticket-group">캐릭터 변환</div></div><div class="stamp">IMG</div></div>' +
+        '<div class="ticket-body">' + escapeHtml(text) + '</div>' +
+        '<div class="perf"></div>' +
+        '<div class="ticket-foot"><div class="dialect">사진을 첨부한 뒤 이 프롬프트를 이어서 붙여넣으세요</div><button class="copy-btn" type="button">' + copyIcon() + '<span>복사</span></button></div>' +
+      '</div>' +
+    '</div>';
+    wireCopyButtons();
+  }
+
+  function renderCharacterError(message, retryable){
+    resultsFlag.textContent = '오류';
+    resultsFlag.className = 'status-flag';
+    resultsBody.innerHTML =
+      '<div class="error-note">' + escapeHtml(message) +
+        (retryable ? '<div><button class="retry-btn" id="char-retry-btn" type="button">다시 시도</button></div>' : '') +
+      '</div>';
+    if (retryable){
+      const btn = document.getElementById('char-retry-btn');
+      if (btn) btn.addEventListener('click', runCharacterGeneration);
+    }
+  }
+
+  function setMode(newMode){
+    modeTabsEl.querySelectorAll('.mode-tab').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.mode === newMode);
+    });
+    panelGeneralEl.hidden = newMode !== 'general';
+    panelCharacterEl.hidden = newMode !== 'character';
+    if (newMode === 'general'){
+      resultsTitleEl.textContent = '번역 결과';
+      renderExample();
+    } else {
+      resultsTitleEl.textContent = '생성된 프롬프트';
+      renderCharacterExample();
+    }
+  }
+
+  modeTabsEl.querySelectorAll('.mode-tab').forEach(btn => {
+    btn.addEventListener('click', () => setMode(btn.dataset.mode));
+  });
+
+  setMode('general');
 
   let currentController = null;
 
@@ -624,6 +752,67 @@
 
   submitBtn.addEventListener('click', runGeneration);
   stopBtn.addEventListener('click', () => { if (currentController) currentController.abort(); });
+
+  let charController = null;
+
+  function setCharBusy(isBusy){
+    charSubmitBtn.disabled = isBusy;
+    charSubmitBtn.innerHTML = isBusy ? '<span class="spinner"></span> 생성 중…' : '프롬프트 만들기';
+    charStopBtn.hidden = !isBusy;
+  }
+
+  async function runCharacterGeneration(){
+    charWarnEl.textContent = '';
+    const subject = charSubjectEl.value.trim();
+    const styleWorld = charStyleEl.value.trim();
+
+    if (!subject){
+      charWarnEl.textContent = '변환할 캐릭터나 사진에 대한 설명을 먼저 적어주세요.';
+      charSubjectEl.focus();
+      return;
+    }
+    if (!styleWorld){
+      charWarnEl.textContent = '원하는 스타일/세계관을 적어주세요.';
+      charStyleEl.focus();
+      return;
+    }
+
+    renderCharacterPending();
+    setCharBusy(true);
+    charController = new AbortController();
+
+    try {
+      const res = await fetch('/api/character', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ subject, styleWorld }),
+        signal: charController.signal,
+      });
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok){
+        renderCharacterError(data.error || '생성 중 문제가 발생했어요. 다시 시도해주세요.', true);
+        return;
+      }
+      if (!data.prompt){
+        renderCharacterError('결과를 받지 못했어요. 다시 시도해주세요.', true);
+        return;
+      }
+      renderCharacterResult(data.prompt);
+    } catch(e) {
+      if (e && e.name === 'AbortError'){
+        renderCharacterExample();
+      } else {
+        renderCharacterError('네트워크 오류가 발생했어요. 연결을 확인하고 다시 시도해주세요.', true);
+      }
+    } finally {
+      setCharBusy(false);
+      charController = null;
+    }
+  }
+
+  charSubmitBtn.addEventListener('click', runCharacterGeneration);
+  charStopBtn.addEventListener('click', () => { if (charController) charController.abort(); });
 })();
 </script>
 </body>
