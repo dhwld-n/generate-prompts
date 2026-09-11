@@ -145,11 +145,6 @@
   .toggle-row input{ accent-color:var(--accent); width:16px; height:16px; margin:0; }
   .toggle-row label{ font-size:13.5px; color:var(--ink-soft); cursor:pointer; }
 
-  .group-title{
-    font-size:11.5px; font-weight:600; letter-spacing:.06em; text-transform:uppercase;
-    color:var(--ink-faint); margin:14px 0 8px;
-  }
-  .group-title:first-of-type{ margin-top:0; }
   .chips{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:4px; }
   .chip{ position:relative; }
   .chip input{ position:absolute; opacity:0; width:100%; height:100%; margin:0; cursor:pointer; }
@@ -167,6 +162,39 @@
   }
   .chip input:focus-visible + span{ outline:2px solid var(--accent); outline-offset:2px; }
   .chip:hover span{ border-color:var(--accent); }
+
+  .cat-tabs{ display:flex; gap:5px; margin-bottom:12px; }
+  .cat-tab{
+    flex:1 1 0; min-width:0; display:flex; align-items:center; justify-content:center; gap:4px;
+    padding:9px 4px; border-radius:9px; border:1px solid var(--line);
+    background:var(--surface-2); color:var(--ink-soft); font-family:inherit;
+    font-size:12.5px; font-weight:600; white-space:nowrap; cursor:pointer; transition:all .12s;
+  }
+  .cat-tab:hover{ border-color:var(--accent); }
+  .cat-tab.active{ background:var(--accent); border-color:var(--accent); color:#fff; }
+  .cat-tab .count{
+    font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:500;
+    background:var(--accent-soft); color:var(--accent-ink); border-radius:999px; padding:1px 5px;
+  }
+  .cat-tab.active .count{ background:rgba(255,255,255,.28); color:#fff; }
+
+  .picked{ margin-top:16px; }
+  .picked-label{
+    font-size:11.5px; font-weight:600; letter-spacing:.06em; text-transform:uppercase;
+    color:var(--ink-faint); margin-bottom:7px;
+  }
+  .picked-empty{ font-size:12.5px; color:var(--ink-faint); }
+  .picked-pills{ display:flex; flex-wrap:wrap; gap:6px; }
+  .picked-pill{
+    display:inline-flex; align-items:center; gap:5px;
+    background:var(--accent-soft); color:var(--accent-ink);
+    border-radius:999px; padding:5px 4px 5px 11px; font-size:12px; font-weight:600;
+  }
+  .picked-pill button{
+    all:unset; cursor:pointer; display:flex; align-items:center; justify-content:center;
+    width:17px; height:17px; border-radius:50%; color:var(--accent-ink); font-size:13px; line-height:1;
+  }
+  .picked-pill button:hover{ background:rgba(0,0,0,.08); }
 
   .warn{ font-size:12.5px; color:var(--danger); margin-top:8px; min-height:16px; }
 
@@ -295,7 +323,14 @@
       </div>
 
       <label class="field-label">어떤 AI에 맞춰 통역할까요?</label>
-      <div id="chip-groups"></div>
+      <div class="cat-tabs" id="cat-tabs"></div>
+      <div class="chips" id="chip-list"></div>
+
+      <div class="picked">
+        <div class="picked-label">선택됨</div>
+        <div id="picked-pills"></div>
+      </div>
+
       <div class="warn" id="warn"></div>
 
       <button class="submit-btn" id="submit-btn">번역 요청</button>
@@ -339,7 +374,9 @@
     suno: '[Style] lo-fi jazz, rainy night ambience, soft piano, pastel nostalgic mood\n[Verse]\n네온 불빛 젖은 골목 위로\n우산 쓴 고양이 걸어가네\n빗소리 사이 작은 발걸음\n조용히 밤을 건너가네',
   };
 
-  const chipGroupsEl = document.getElementById('chip-groups');
+  const catTabsEl = document.getElementById('cat-tabs');
+  const chipListEl = document.getElementById('chip-list');
+  const pickedPillsEl = document.getElementById('picked-pills');
   const warnEl = document.getElementById('warn');
   const submitBtn = document.getElementById('submit-btn');
   const stopBtn = document.getElementById('stop-btn');
@@ -349,38 +386,88 @@
   const styleEl = document.getElementById('style');
   const englishEl = document.getElementById('english');
 
-  function buildChips(){
-    GROUP_ORDER.forEach(group => {
-      const title = document.createElement('div');
-      title.className = 'group-title';
-      title.textContent = group;
-      chipGroupsEl.appendChild(title);
+  const selectedIds = new Set(DEFAULT_SELECTED);
+  let activeGroup = GROUP_ORDER[0];
 
-      const row = document.createElement('div');
-      row.className = 'chips';
-      PLATFORMS.filter(p => p.group === group).forEach(p => {
-        const label = document.createElement('label');
-        label.className = 'chip';
-        const input = document.createElement('input');
-        input.type = 'checkbox';
-        input.value = p.id;
-        input.name = 'platform';
-        input.checked = DEFAULT_SELECTED.includes(p.id);
-        const span = document.createElement('span');
-        span.textContent = p.label;
-        label.appendChild(input);
-        label.appendChild(span);
-        row.appendChild(label);
+  function countInGroup(group){
+    return PLATFORMS.filter(p => p.group === group && selectedIds.has(p.id)).length;
+  }
+
+  function renderTabs(){
+    catTabsEl.innerHTML = '';
+    GROUP_ORDER.forEach(group => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'cat-tab' + (group === activeGroup ? ' active' : '');
+      const count = countInGroup(group);
+      btn.innerHTML = group + (count ? ' <span class="count">' + count + '</span>' : '');
+      btn.addEventListener('click', () => {
+        activeGroup = group;
+        renderTabs();
+        renderChips();
       });
-      chipGroupsEl.appendChild(row);
+      catTabsEl.appendChild(btn);
     });
   }
-  buildChips();
+
+  function renderChips(){
+    chipListEl.innerHTML = '';
+    PLATFORMS.filter(p => p.group === activeGroup).forEach(p => {
+      const label = document.createElement('label');
+      label.className = 'chip';
+      const input = document.createElement('input');
+      input.type = 'checkbox';
+      input.value = p.id;
+      input.name = 'platform';
+      input.checked = selectedIds.has(p.id);
+      input.addEventListener('change', () => {
+        if (input.checked) selectedIds.add(p.id); else selectedIds.delete(p.id);
+        renderTabs();
+        renderPicked();
+      });
+      const span = document.createElement('span');
+      span.textContent = p.label;
+      label.appendChild(input);
+      label.appendChild(span);
+      chipListEl.appendChild(label);
+    });
+  }
+
+  function renderPicked(){
+    const chosen = PLATFORMS.filter(p => selectedIds.has(p.id));
+    if (chosen.length === 0){
+      pickedPillsEl.innerHTML = '<div class="picked-empty">아직 선택된 AI가 없어요. 위에서 하나 이상 골라주세요.</div>';
+      return;
+    }
+    pickedPillsEl.innerHTML = '';
+    pickedPillsEl.className = 'picked-pills';
+    chosen.forEach(p => {
+      const pill = document.createElement('span');
+      pill.className = 'picked-pill';
+      const text = document.createElement('span');
+      text.textContent = p.label;
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.setAttribute('aria-label', p.label + ' 선택 해제');
+      btn.textContent = '×';
+      btn.addEventListener('click', () => {
+        selectedIds.delete(p.id);
+        renderTabs();
+        if (p.group === activeGroup) renderChips();
+        renderPicked();
+      });
+      pill.appendChild(text);
+      pill.appendChild(btn);
+      pickedPillsEl.appendChild(pill);
+    });
+  }
+
+  renderTabs();
+  renderChips();
+  renderPicked();
 
   function selectedPlatforms(){
-    return Array.from(chipGroupsEl.querySelectorAll('input[name="platform"]:checked')).map(i =>
-      PLATFORMS.find(p => p.id === i.value)
-    );
+    return PLATFORMS.filter(p => selectedIds.has(p.id));
   }
 
   function copyIcon(){
