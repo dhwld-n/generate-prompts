@@ -179,6 +179,7 @@
   @media (max-width:860px){ .layout{ grid-template-columns:1fr; } }
 
   .panel{
+    position:relative;
     background:var(--surface);
     border:1px solid var(--line);
     border-radius:14px;
@@ -187,9 +188,18 @@
   }
   .panel h2{ font-family:'DearFromsol','Malgun Gothic',serif; font-weight:normal; }
 
-  .desk{ padding:22px 22px 20px; position:sticky; top:20px; }
+  .panel-badge{
+    position:absolute; top:0; left:24px; transform:translateY(-50%);
+    display:inline-flex; align-items:center;
+    padding:7px 20px; border-radius:999px;
+    background:var(--accent-soft); border:1px solid var(--accent);
+    color:var(--accent-ink);
+    font-family:'GriunMongtori','Malgun Gothic',serif;
+    font-size:18px; font-weight:normal; white-space:nowrap;
+  }
+
+  .desk{ padding:38px 22px 20px; position:sticky; top:20px; }
   @media (max-width:860px){ .desk{ position:static; } }
-  .desk h2{ font-family:'GriunMongtori','Malgun Gothic',serif; font-size:22px; font-weight:normal; margin-bottom:4px; }
   .desk .desk-sub{ color:var(--ink-faint); font-size:13px; margin-bottom:18px; }
 
   label.field-label{
@@ -310,9 +320,8 @@
   @keyframes spin{ to{ transform:rotate(360deg); } }
   @media (prefers-reduced-motion: reduce){ .spinner{ animation:none; } }
 
-  .results{ padding:20px 22px; min-height:200px; }
-  .results-head{ display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:14px; flex-wrap:wrap; }
-  .results-head h2{ font-family:'GriunMongtori','Malgun Gothic',serif; font-size:22px; font-weight:normal; }
+  .results{ padding:38px 22px 20px; min-height:200px; }
+  .results-head{ display:flex; justify-content:flex-end; margin-bottom:14px; }
   .sample-flag{
     font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:.06em;
     color:var(--brass); background:var(--brass-soft); padding:4px 9px; border-radius:6px;
@@ -414,7 +423,7 @@
 
   <div class="layout">
     <div class="panel desk">
-      <h2>접수대</h2>
+      <div class="panel-badge">접수대</div>
       <div class="desk-sub">무엇을 만들고 싶은지 적어주세요</div>
 
       <div class="mode-tabs" id="mode-tabs">
@@ -485,8 +494,8 @@
     </div>
 
     <div class="panel results">
+      <div class="panel-badge" id="results-title">생성 결과</div>
       <div class="results-head">
-        <h2 id="results-title">생성 결과</h2>
         <span id="results-flag" class="sample-flag">예시</span>
       </div>
       <div id="results-body"></div>
