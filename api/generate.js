@@ -17,7 +17,7 @@ module.exports = async function handler(req, res) {
   if (typeof body === 'string') {
     try { body = JSON.parse(body); } catch { body = {}; }
   }
-  const { idea, style, useEnglish, platforms } = body || {};
+  const { idea, style, useEnglish, platforms, attachment } = body || {};
 
   if (typeof idea !== 'string' || !idea.trim()) {
     res.status(400).json({ error: '무엇을 만들고 싶은지 입력해주세요.' });
@@ -46,6 +46,26 @@ module.exports = async function handler(req, res) {
     }
   }
 
+  const ALLOWED_ATTACHMENT_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'application/pdf'];
+  const MAX_ATTACHMENT_BASE64_LENGTH = 4200000; // ~3MB decoded
+
+  let attachmentPart = null;
+  if (attachment != null) {
+    if (typeof attachment !== 'object' || typeof attachment.mimeType !== 'string' || typeof attachment.data !== 'string') {
+      res.status(400).json({ error: '첨부 파일 형식이 올바르지 않아요.' });
+      return;
+    }
+    if (!ALLOWED_ATTACHMENT_TYPES.includes(attachment.mimeType)) {
+      res.status(400).json({ error: '이미지(PNG/JPG/WEBP) 또는 PDF 파일만 첨부할 수 있어요.' });
+      return;
+    }
+    if (attachment.data.length > MAX_ATTACHMENT_BASE64_LENGTH) {
+      res.status(400).json({ error: '첨부 파일이 너무 커요. 3MB 이하로 올려주세요.' });
+      return;
+    }
+    attachmentPart = { inlineData: { mimeType: attachment.mimeType, data: attachment.data } };
+  }
+
   const langLine = useEnglish
     ? '이미지·영상 플랫폼의 프롬프트는 영어로 작성하라 (해당 AI들이 영어 프롬프트에서 더 좋은 결과를 내는 경우가 많다). 텍스트 생성 AI(ChatGPT, Claude, Gemini)를 위한 지시문은 한국어로 작성하라.'
     : '모든 프롬프트를 한국어로 작성하라.';
@@ -65,13 +85,16 @@ ${langLine}
 
 ${platformLines}
 
-각 프롬프트는 실제로 해당 플랫폼에 바로 붙여넣어 쓸 수 있는 완성된 형태여야 하며, 설명이나 따옴표 없이 프롬프트 본문만 담아야 한다. 이미지·영상 플랫폼의 경우 관례에 맞는 파라미터(비율, 스타일 태그 등)를 포함하라.`;
+각 프롬프트는 실제로 해당 플랫폼에 바로 붙여넣어 쓸 수 있는 완성된 형태여야 하며, 설명이나 따옴표 없이 프롬프트 본문만 담아야 한다. 이미지·영상 플랫폼의 경우 관례에 맞는 파라미터(비율, 스타일 태그 등)를 포함하라.${attachmentPart ? '\n\n참고: 사용자가 이미지 또는 PDF 파일을 함께 첨부했다. 그 파일에 나타난 스타일·형식·구성·톤을 분석해서 위 요청 내용과 결합한 뒤, 각 플랫폼 프롬프트에 그 특징을 구체적으로 반영하라. 첨부 파일이 시험지·족보 같은 특정 문서 양식이라면 문항 구성, 배치, 표기 방식 등 형식적 특징을 프롬프트 안에 명확히 서술하라.' : ''}`;
 
   const model = process.env.GEMINI_MODEL || 'gemini-3.6-flash';
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
+  const parts = [{ text: prompt }];
+  if (attachmentPart) parts.push(attachmentPart);
+
   const geminiBody = {
-    contents: [{ role: 'user', parts: [{ text: prompt }] }],
+    contents: [{ role: 'user', parts }],
     generationConfig: {
       responseMimeType: 'application/json',
       responseSchema: {
