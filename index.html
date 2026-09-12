@@ -28,6 +28,13 @@
     font-style:normal;
     font-display:swap;
   }
+  @font-face{
+    font-family:'OngleipParkDahyeon';
+    src:url('fonts/OngleipParkDahyeon.woff2') format('woff2');
+    font-weight:normal;
+    font-style:normal;
+    font-display:swap;
+  }
 
   :root{
     --bg:#eceef0;
@@ -135,7 +142,11 @@
     font-size:clamp(30px,4.4vw,42px); font-weight:normal; color:var(--ink);
   }
   h1.title em{ font-style:normal; color:var(--accent); }
-  .subtitle{ margin-top:10px; max-width:60ch; color:var(--ink-soft); font-size:15.5px; }
+  .subtitle{
+    margin-top:10px; max-width:60ch; color:var(--ink-soft);
+    font-family:'OngleipParkDahyeon','Work Sans','Malgun Gothic',sans-serif;
+    font-size:19px; line-height:1.5;
+  }
 
   .layout{ display:grid; grid-template-columns:380px 1fr; gap:22px; align-items:start; }
   @media (max-width:860px){ .layout{ grid-template-columns:1fr; } }
@@ -361,7 +372,7 @@
   <header class="masthead">
     <div class="eyebrow">Prompt Factory</div>
     <h1 class="title">뚝딱뚝딱 <em>프롬프트</em></h1>
-    <p class="subtitle">하고 싶은 것을 한 번만 적으면, 이미지·영상·음악·텍스트 생성 AI마다 다른 프롬프트 문법에 맞춰 통역해 드립니다.</p>
+    <p class="subtitle">하고 싶은 것을 한 번만 적으면, 이미지·영상·음악·텍스트 생성 AI마다 다른 프롬프트 문법에 맞춰 만들어 드립니다.</p>
   </header>
 
   <div class="layout">
