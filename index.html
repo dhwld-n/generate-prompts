@@ -106,6 +106,19 @@
 
   .page{ max-width:1080px; margin:0 auto; padding:40px 24px 64px; }
 
+  .theme-toggle{
+    position:fixed; top:20px; right:20px; z-index:20;
+    width:38px; height:38px; border-radius:50%;
+    border:1px solid var(--line); background:var(--surface); color:var(--ink-soft);
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer; box-shadow:var(--shadow); transition:color .15s, border-color .15s;
+  }
+  .theme-toggle:hover{ border-color:var(--accent); color:var(--accent); }
+  .theme-toggle svg{ width:18px; height:18px; }
+  .theme-toggle .icon-moon{ display:none; }
+  .theme-toggle.is-dark .icon-sun{ display:none; }
+  .theme-toggle.is-dark .icon-moon{ display:block; }
+
   header.masthead{ margin-bottom:32px; }
   .eyebrow{
     font-family:'CloudSofa','JetBrains Mono',monospace;
@@ -327,9 +340,24 @@
 
   footer.fine{ margin-top:26px; font-size:12px; color:var(--ink-faint); text-align:center; }
 </style>
+<script>
+  (function(){
+    try {
+      var saved = localStorage.getItem('theme');
+      if (saved === 'light' || saved === 'dark') {
+        document.documentElement.setAttribute('data-theme', saved);
+      }
+    } catch(e) {}
+  })();
+</script>
 </head>
 <body>
 <div class="page">
+  <button type="button" id="theme-toggle" class="theme-toggle" aria-label="화면 테마 전환">
+    <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path></svg>
+    <svg class="icon-moon" viewBox="0 0 24 24" fill="currentColor"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+  </button>
+
   <header class="masthead">
     <div class="eyebrow">Prompt Factory</div>
     <h1 class="title">뚝딱뚝딱 <em>프롬프트</em></h1>
@@ -421,6 +449,34 @@
 </div>
 
 <script>
+(function(){
+  var root = document.documentElement;
+  var themeToggle = document.getElementById('theme-toggle');
+
+  function activeTheme(){
+    var attr = root.getAttribute('data-theme');
+    if (attr === 'light' || attr === 'dark') return attr;
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+
+  function syncToggleIcon(){
+    themeToggle.classList.toggle('is-dark', activeTheme() === 'dark');
+  }
+  syncToggleIcon();
+
+  themeToggle.addEventListener('click', function(){
+    var next = activeTheme() === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    try { localStorage.setItem('theme', next); } catch(e) {}
+    syncToggleIcon();
+  });
+
+  var darkMedia = window.matchMedia('(prefers-color-scheme: dark)');
+  darkMedia.addEventListener('change', function(){
+    if (!root.getAttribute('data-theme')) syncToggleIcon();
+  });
+})();
+
 (function(){
   const PLATFORMS = [
     { id:'midjourney', group:'이미지', label:'Midjourney', dialect:'쉼표로 나열한 키워드 + --ar, --v 같은 파라미터', stamp:'IMG' },
