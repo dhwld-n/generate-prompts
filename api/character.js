@@ -19,7 +19,10 @@ module.exports = async function handler(req, res) {
   if (typeof body === 'string') {
     try { body = JSON.parse(body); } catch { body = {}; }
   }
-  const { subject, styleWorld } = body || {};
+  const { subject, styleWorld, target } = body || {};
+
+  const TARGET_NAMES = { chatgpt: 'ChatGPT', gemini: 'Gemini', claude: 'Claude' };
+  const targetName = TARGET_NAMES[target] || TARGET_NAMES.chatgpt;
 
   if (typeof subject !== 'string' || !subject.trim()) {
     res.status(400).json({ error: '변환할 캐릭터나 사진에 대한 설명을 입력해주세요.' });
@@ -43,7 +46,7 @@ module.exports = async function handler(req, res) {
 
   const prompt = `당신은 사진이나 캐릭터 묘사를 받아 특정 스타일 세계관의 아바타로 재해석하는 이미지 생성 프롬프트를 전문적으로 작성하는 프롬프트 엔지니어다.
 
-아래 정보를 참고해서, ChatGPT의 이미지 생성 기능에 그대로 붙여넣어 쓸 수 있는 매우 상세하고 정교한 "아트 디렉션 브리프" 형식의 프롬프트 하나를 작성하라. 사용자는 이 프롬프트와 함께 변환하고 싶은 사진을 ChatGPT에 첨부할 예정이다.
+아래 정보를 참고해서, ${targetName}의 이미지 생성 기능에 그대로 붙여넣어 쓸 수 있는 매우 상세하고 정교한 "아트 디렉션 브리프" 형식의 프롬프트 하나를 작성하라. 사용자는 이 프롬프트와 함께 변환하고 싶은 사진을 ${targetName}에 첨부할 예정이다.
 
 변환 대상: "${subjectTrimmed}"
 목표 스타일/세계관: "${styleTrimmed}"

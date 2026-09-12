@@ -373,7 +373,10 @@
           </datalist>
         </div>
 
-        <div class="banner"><strong>참고.</strong> 이 프롬프트는 사진을 함께 첨부했을 때 가장 잘 작동해요. ChatGPT에서 변환하고 싶은 사진을 먼저 올린 뒤, 생성된 프롬프트를 이어서 붙여넣으세요.</div>
+        <label class="field-label">어떤 AI에서 사용할까요?</label>
+        <div class="cat-tabs" id="char-target-tabs"></div>
+
+        <div class="banner" id="char-banner"></div>
 
         <div class="warn" id="char-warn"></div>
 
@@ -437,8 +440,39 @@
   const panelCharacterEl = document.getElementById('panel-character');
   const charSubjectEl = document.getElementById('char-subject');
   const charStyleEl = document.getElementById('char-style');
+  const charTargetTabsEl = document.getElementById('char-target-tabs');
+  const charBannerEl = document.getElementById('char-banner');
   const charWarnEl = document.getElementById('char-warn');
   const charSubmitBtn = document.getElementById('char-submit-btn');
+
+  const CHAR_TARGETS = [
+    { id:'chatgpt', label:'ChatGPT', stamp:'IMG', banner:'이 프롬프트는 사진을 함께 첨부했을 때 가장 잘 작동해요. ChatGPT에서 변환하고 싶은 사진을 먼저 올린 뒤, 생성된 프롬프트를 이어서 붙여넣으세요.' },
+    { id:'gemini',  label:'Gemini',  stamp:'IMG', banner:'이 프롬프트는 사진을 함께 첨부했을 때 가장 잘 작동해요. Gemini 앱에서 변환하고 싶은 사진을 먼저 올린 뒤, 생성된 프롬프트를 이어서 붙여넣으세요.' },
+    { id:'claude',  label:'Claude',  stamp:'IMG', banner:'이 프롬프트는 사진을 함께 첨부했을 때 가장 잘 작동해요. Claude에서 변환하고 싶은 사진을 먼저 올린 뒤, 생성된 프롬프트를 이어서 붙여넣으세요.' },
+  ];
+  let charTarget = CHAR_TARGETS[0].id;
+
+  function getCharTarget(){
+    return CHAR_TARGETS.find(t => t.id === charTarget) || CHAR_TARGETS[0];
+  }
+
+  function renderCharTargetTabs(){
+    charTargetTabsEl.innerHTML = '';
+    CHAR_TARGETS.forEach(t => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'cat-tab' + (t.id === charTarget ? ' active' : '');
+      btn.textContent = t.label;
+      btn.addEventListener('click', () => {
+        charTarget = t.id;
+        renderCharTargetTabs();
+        charBannerEl.innerHTML = '<strong>참고.</strong> ' + t.banner;
+      });
+      charTargetTabsEl.appendChild(btn);
+    });
+  }
+  renderCharTargetTabs();
+  charBannerEl.innerHTML = '<strong>참고.</strong> ' + getCharTarget().banner;
   const charStopBtn = document.getElementById('char-stop-btn');
 
   const selectedIds = new Set(DEFAULT_SELECTED);
@@ -628,9 +662,10 @@
   function renderCharacterPending(){
     resultsFlag.textContent = '생성 중';
     resultsFlag.className = 'status-flag';
+    const t = getCharTarget();
     resultsBody.innerHTML = '<div class="tickets">' +
       '<div class="ticket pending">' +
-        '<div class="ticket-top"><div><div class="ticket-plat">ChatGPT 이미지</div><div class="ticket-group">캐릭터 변환</div></div><div class="stamp">IMG</div></div>' +
+        '<div class="ticket-top"><div><div class="ticket-plat">' + t.label + '</div><div class="ticket-group">캐릭터 변환</div></div><div class="stamp">' + t.stamp + '</div></div>' +
         '<div class="ticket-body skeleton"><div class="skeleton-line"></div><div class="skeleton-line"></div><div class="skeleton-line"></div></div>' +
       '</div>' +
     '</div>';
@@ -639,9 +674,10 @@
   function renderCharacterResult(text){
     resultsFlag.textContent = '완료';
     resultsFlag.className = 'status-flag';
+    const t = getCharTarget();
     resultsBody.innerHTML = '<div class="tickets">' +
       '<div class="ticket" data-id="char-result">' +
-        '<div class="ticket-top"><div><div class="ticket-plat">ChatGPT 이미지</div><div class="ticket-group">캐릭터 변환</div></div><div class="stamp">IMG</div></div>' +
+        '<div class="ticket-top"><div><div class="ticket-plat">' + t.label + '</div><div class="ticket-group">캐릭터 변환</div></div><div class="stamp">' + t.stamp + '</div></div>' +
         '<div class="ticket-body">' + escapeHtml(text) + '</div>' +
         '<div class="perf"></div>' +
         '<div class="ticket-foot"><div class="dialect">사진을 첨부한 뒤 이 프롬프트를 이어서 붙여넣으세요</div><button class="copy-btn" type="button">' + copyIcon() + '<span>복사</span></button></div>' +
@@ -785,7 +821,7 @@
       const res = await fetch('/api/character', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ subject, styleWorld }),
+        body: JSON.stringify({ subject, styleWorld, target: charTarget }),
         signal: charController.signal,
       });
       const data = await res.json().catch(() => ({}));
