@@ -7,6 +7,14 @@
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
+  @font-face{
+    font-family:'LotteriaChab';
+    src:url('fonts/LotteriaChab.woff2') format('woff2');
+    font-weight:normal;
+    font-style:normal;
+    font-display:swap;
+  }
+
   :root{
     --bg:#eceef0;
     --surface:#ffffff;
@@ -97,8 +105,11 @@
     margin-bottom:10px;
   }
   .eyebrow::before{ content:''; width:16px; height:1px; background:var(--brass); display:inline-block; }
-  h1.title{ font-size:clamp(28px,4vw,38px); font-weight:600; color:var(--ink); }
-  h1.title em{ font-style:italic; color:var(--accent); }
+  h1.title{
+    font-family:'LotteriaChab','Fraunces','Malgun Gothic',serif;
+    font-size:clamp(30px,4.4vw,42px); font-weight:normal; color:var(--ink);
+  }
+  h1.title em{ font-style:normal; color:var(--accent); }
   .subtitle{ margin-top:10px; max-width:60ch; color:var(--ink-soft); font-size:15.5px; }
 
   .layout{ display:grid; grid-template-columns:380px 1fr; gap:22px; align-items:start; }
@@ -309,7 +320,7 @@
 <div class="page">
   <header class="masthead">
     <div class="eyebrow">Multi-Dialect Prompt Desk</div>
-    <h1 class="title">프롬프트 <em>통역소</em></h1>
+    <h1 class="title">뚝딱뚝딱 <em>프롬프트</em></h1>
     <p class="subtitle">하고 싶은 것을 한 번만 적으면, 이미지·영상·음악·텍스트 생성 AI마다 다른 프롬프트 문법에 맞춰 통역해 드립니다.</p>
   </header>
 
