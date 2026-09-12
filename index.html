@@ -303,6 +303,14 @@
   }
   .banner strong{ color:var(--ink); }
 
+  .empty-state{
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; gap:6px; padding:56px 20px; color:var(--ink-faint);
+    border:1px dashed var(--line); border-radius:12px;
+  }
+  .empty-state strong{ color:var(--ink-soft); font-size:14.5px; font-weight:600; }
+  .empty-state span{ font-size:13px; max-width:36ch; line-height:1.5; }
+
   .tickets{ display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:14px; }
 
   .ticket{
@@ -391,12 +399,12 @@
       <div id="panel-general">
         <div class="field">
           <label class="field-label" for="idea">무엇을 만들고 싶나요?</label>
-          <textarea id="idea" maxlength="800" placeholder="예: 비 오는 밤 골목, 네온사인 아래 우산을 쓴 고양이">비 오는 밤 골목, 네온사인 아래 우산을 쓴 고양이</textarea>
+          <textarea id="idea" maxlength="800" placeholder="예: 비 오는 밤 골목, 네온사인 아래 우산을 쓴 고양이"></textarea>
         </div>
 
         <div class="field">
           <label class="field-label" for="style">원하는 분위기 / 스타일 (선택)</label>
-          <input id="style" type="text" maxlength="300" placeholder="예: 시네마틱, 파스텔톤 조명" value="시네마틱, 파스텔톤 조명">
+          <input id="style" type="text" maxlength="300" placeholder="예: 시네마틱, 파스텔톤 조명">
         </div>
 
         <div class="toggle-row">
@@ -507,13 +515,7 @@
     { id:'gemini',     group:'텍스트', label:'Gemini', dialect:'목표와 제약을 명시한 구조화 지시문', stamp:'TXT' },
   ];
   const GROUP_ORDER = ['이미지','영상','음악','텍스트'];
-  const DEFAULT_SELECTED = ['midjourney','chatgpt','suno'];
-
-  const EXAMPLE_RESULTS = {
-    midjourney: 'a cat holding a tiny umbrella walking through a rain-soaked neon-lit alley at night, cinematic pastel lighting, reflections on wet pavement, shallow depth of field, ultra detailed --ar 3:2 --v 6',
-    chatgpt: '너는 감성적인 단편 소설 작가야. 비 오는 밤, 네온사인이 비치는 골목에서 우산을 쓴 고양이가 걸어가는 장면을 시네마틱하고 파스텔톤인 분위기로 300자 내외의 짧은 글로 묘사해줘. 문장은 감각적이고 은유적으로 써줘.',
-    suno: '[Style] lo-fi jazz, rainy night ambience, soft piano, pastel nostalgic mood\n[Verse]\n네온 불빛 젖은 골목 위로\n우산 쓴 고양이 걸어가네\n빗소리 사이 작은 발걸음\n조용히 밤을 건너가네',
-  };
+  const DEFAULT_SELECTED = [];
 
   const catTabsEl = document.getElementById('cat-tabs');
   const chipListEl = document.getElementById('chip-list');
@@ -681,22 +683,23 @@
   }
 
   function renderExample(){
-    resultsFlag.textContent = '예시';
-    resultsFlag.className = 'sample-flag';
-    const platforms = DEFAULT_SELECTED.map(id => PLATFORMS.find(p => p.id === id));
+    resultsFlag.hidden = true;
     resultsBody.innerHTML =
-      '<div class="banner"><strong>예시입니다.</strong> 왼쪽 접수대에 내용을 입력하고 "번역 요청"을 누르면 실제로 생성된 결과로 바뀝니다.</div>' +
-      '<div class="tickets">' + platforms.map(p => ticketMarkup(p, EXAMPLE_RESULTS[p.id], false)).join('') + '</div>';
-    wireCopyButtons();
+      '<div class="empty-state">' +
+        '<strong>아직 만들어진 프롬프트가 없어요</strong>' +
+        '<span>왼쪽 접수대에 내용을 적고 AI를 하나 이상 선택한 뒤 "번역 요청"을 누르면 결과가 여기에 표시돼요.</span>' +
+      '</div>';
   }
 
   function renderPending(platforms){
+    resultsFlag.hidden = false;
     resultsFlag.textContent = '생성 중';
     resultsFlag.className = 'status-flag';
     resultsBody.innerHTML = '<div class="tickets">' + platforms.map(p => ticketMarkup(p, '', true)).join('') + '</div>';
   }
 
   function renderResults(platforms, byId){
+    resultsFlag.hidden = false;
     resultsFlag.textContent = '완료';
     resultsFlag.className = 'status-flag';
     resultsBody.innerHTML = '<div class="tickets">' + platforms.map(p =>
@@ -706,6 +709,7 @@
   }
 
   function renderError(message, retryable){
+    resultsFlag.hidden = false;
     resultsFlag.textContent = '오류';
     resultsFlag.className = 'status-flag';
     resultsBody.innerHTML =
