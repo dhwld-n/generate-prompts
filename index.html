@@ -458,7 +458,7 @@
 
         <div class="warn" id="warn"></div>
 
-        <button class="submit-btn" id="submit-btn">번역 요청</button>
+        <button class="submit-btn" id="submit-btn">프롬프트 생성하기</button>
         <button class="stop-btn" id="stop-btn" hidden>생성 중지</button>
       </div>
 
@@ -722,7 +722,7 @@
     resultsBody.innerHTML =
       '<div class="empty-state">' +
         '<strong>아직 만들어진 프롬프트가 없어요</strong>' +
-        '<span>왼쪽 접수대에 내용을 적고 AI를 하나 이상 선택한 뒤 "번역 요청"을 누르면 결과가 여기에 표시돼요.</span>' +
+        '<span>왼쪽 접수대에 내용을 적고 AI를 하나 이상 선택한 뒤 "프롬프트 생성하기"를 누르면 결과가 여기에 표시돼요.</span>' +
       '</div>';
   }
 
@@ -856,7 +856,7 @@
 
   function setBusy(isBusy){
     submitBtn.disabled = isBusy;
-    submitBtn.innerHTML = isBusy ? '<span class="spinner"></span> 번역 중…' : '번역 요청';
+    submitBtn.innerHTML = isBusy ? '<span class="spinner"></span> 생성 중…' : '프롬프트 생성하기';
     stopBtn.hidden = !isBusy;
   }
 
