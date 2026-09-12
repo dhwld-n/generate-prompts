@@ -42,6 +42,13 @@
     font-style:normal;
     font-display:swap;
   }
+  @font-face{
+    font-family:'GriunMongtori';
+    src:url('fonts/GriunMongtori.woff2') format('woff2');
+    font-weight:normal;
+    font-style:normal;
+    font-display:swap;
+  }
 
   :root{
     --bg:#eceef0;
@@ -172,7 +179,7 @@
 
   .desk{ padding:22px 22px 20px; position:sticky; top:20px; }
   @media (max-width:860px){ .desk{ position:static; } }
-  .desk h2{ font-size:20px; font-weight:normal; margin-bottom:4px; }
+  .desk h2{ font-family:'GriunMongtori','Malgun Gothic',serif; font-size:22px; font-weight:normal; margin-bottom:4px; }
   .desk .desk-sub{ color:var(--ink-faint); font-size:13px; margin-bottom:18px; }
 
   label.field-label{
@@ -295,7 +302,7 @@
 
   .results{ padding:20px 22px; min-height:200px; }
   .results-head{ display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:14px; flex-wrap:wrap; }
-  .results-head h2{ font-size:20px; font-weight:normal; }
+  .results-head h2{ font-family:'GriunMongtori','Malgun Gothic',serif; font-size:22px; font-weight:normal; }
   .sample-flag{
     font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:.06em;
     color:var(--brass); background:var(--brass-soft); padding:4px 9px; border-radius:6px;
@@ -469,7 +476,7 @@
 
     <div class="panel results">
       <div class="results-head">
-        <h2 id="results-title">번역 결과</h2>
+        <h2 id="results-title">생성 결과</h2>
         <span id="results-flag" class="sample-flag">예시</span>
       </div>
       <div id="results-body"></div>
@@ -812,7 +819,7 @@
     panelGeneralEl.hidden = newMode !== 'general';
     panelCharacterEl.hidden = newMode !== 'character';
     if (newMode === 'general'){
-      resultsTitleEl.textContent = '번역 결과';
+      resultsTitleEl.textContent = '생성 결과';
       renderExample();
     } else {
       resultsTitleEl.textContent = '생성된 프롬프트';
