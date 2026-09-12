@@ -14,6 +14,13 @@
     font-style:normal;
     font-display:swap;
   }
+  @font-face{
+    font-family:'GriunMyoeunHeullim';
+    src:url('fonts/GriunMyoeunHeullim.woff2') format('woff2');
+    font-weight:normal;
+    font-style:normal;
+    font-display:swap;
+  }
 
   :root{
     --bg:#eceef0;
@@ -94,10 +101,9 @@
 
   header.masthead{ margin-bottom:32px; }
   .eyebrow{
-    font-family:'JetBrains Mono',monospace;
-    font-size:11.5px;
-    letter-spacing:.14em;
-    text-transform:uppercase;
+    font-family:'GriunMyoeunHeullim','JetBrains Mono',monospace;
+    font-size:20px;
+    letter-spacing:.02em;
     color:var(--brass);
     display:flex;
     align-items:center;
@@ -319,7 +325,7 @@
 <body>
 <div class="page">
   <header class="masthead">
-    <div class="eyebrow">Multi-Dialect Prompt Desk</div>
+    <div class="eyebrow">Prompt Factory</div>
     <h1 class="title">뚝딱뚝딱 <em>프롬프트</em></h1>
     <p class="subtitle">하고 싶은 것을 한 번만 적으면, 이미지·영상·음악·텍스트 생성 AI마다 다른 프롬프트 문법에 맞춰 통역해 드립니다.</p>
   </header>
