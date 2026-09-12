@@ -395,6 +395,35 @@
     padding:7px 13px; border-radius:7px; font-size:12.5px; cursor:pointer; font-family:inherit;
   }
 
+  .history{ margin-top:22px; padding:32px 22px 26px; }
+  .history-head{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:14px; flex-wrap:wrap; }
+  .history-sub{ font-size:12.5px; color:var(--ink-faint); }
+  .history-clear-btn{
+    background:transparent; border:1px solid var(--line); color:var(--ink-soft);
+    font-family:inherit; font-size:12px; padding:6px 12px; border-radius:7px; cursor:pointer;
+  }
+  .history-clear-btn:hover{ border-color:var(--danger); color:var(--danger); }
+  .history-empty{ font-size:13px; color:var(--ink-faint); padding:22px 0; text-align:center; }
+  .history-list{ display:flex; flex-direction:column; gap:10px; }
+  .history-item{ border:1px solid var(--line); border-radius:11px; background:var(--surface-2); padding:13px 14px; }
+  .history-item-top{ display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
+  .history-meta{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:5px; }
+  .history-mode{
+    font-size:10.5px; font-weight:700; letter-spacing:.04em; text-transform:uppercase;
+    color:var(--accent-ink); background:var(--accent-soft); padding:2px 8px; border-radius:999px;
+  }
+  .history-time{ font-size:11.5px; color:var(--ink-faint); font-family:'JetBrains Mono',monospace; }
+  .history-summary{ font-size:13.5px; color:var(--ink); line-height:1.5; word-break:break-word; }
+  .history-platforms{ font-size:11.5px; color:var(--ink-faint); margin-top:3px; }
+  .history-actions{ display:flex; align-items:center; gap:6px; flex:none; }
+  .history-toggle-btn, .history-del-btn{
+    background:transparent; border:1px solid var(--line); color:var(--ink-soft);
+    font-family:inherit; font-size:11.5px; padding:5px 10px; border-radius:7px; cursor:pointer; white-space:nowrap;
+  }
+  .history-toggle-btn:hover{ border-color:var(--accent); color:var(--accent); }
+  .history-del-btn:hover{ border-color:var(--danger); color:var(--danger); }
+  .history-detail{ margin-top:12px; padding-top:12px; border-top:1px dashed var(--line); }
+
   footer.fine{ margin-top:26px; font-size:12px; color:var(--ink-faint); text-align:center; }
 </style>
 <script>
@@ -500,6 +529,15 @@
       </div>
       <div id="results-body"></div>
     </div>
+  </div>
+
+  <div class="panel history">
+    <div class="panel-badge">생성 기록</div>
+    <div class="history-head">
+      <span class="history-sub">이 기기(브라우저)에만 저장돼요 · 최근 30개</span>
+      <button type="button" class="history-clear-btn" id="history-clear-btn" hidden>전체 삭제</button>
+    </div>
+    <div id="history-body"></div>
   </div>
 
   <footer class="fine">입력한 내용은 서버에 저장되지 않으며, 요청 처리를 위해 Google Gemini API로 전달됩니다.</footer>
@@ -757,8 +795,8 @@
     }
   }
 
-  function wireCopyButtons(){
-    resultsBody.querySelectorAll('.ticket').forEach(ticket => {
+  function wireCopyButtons(container){
+    (container || resultsBody).querySelectorAll('.ticket').forEach(ticket => {
       const btn = ticket.querySelector('.copy-btn');
       if (!btn) return;
       btn.addEventListener('click', async () => {
@@ -906,6 +944,19 @@
         }
       });
       renderResults(platforms, byId);
+
+      const historyItems = platforms
+        .map(p => ({ id:p.id, label:p.label, group:p.group, dialect:p.dialect, stamp:p.stamp, prompt: byId[p.id] || '' }))
+        .filter(it => it.prompt);
+      if (historyItems.length){
+        addHistoryEntry({
+          id: makeId(),
+          mode: 'general',
+          createdAt: Date.now(),
+          idea, style,
+          items: historyItems,
+        });
+      }
     } catch(e) {
       if (e && e.name === 'AbortError'){
         renderExample();
@@ -967,6 +1018,15 @@
         return;
       }
       renderCharacterResult(data.prompt);
+
+      const t = getCharTarget();
+      addHistoryEntry({
+        id: makeId(),
+        mode: 'character',
+        createdAt: Date.now(),
+        subject, styleWorld,
+        item: { label: t.label, stamp: t.stamp, prompt: data.prompt },
+      });
     } catch(e) {
       if (e && e.name === 'AbortError'){
         renderCharacterExample();
@@ -981,6 +1041,140 @@
 
   charSubmitBtn.addEventListener('click', runCharacterGeneration);
   charStopBtn.addEventListener('click', () => { if (charController) charController.abort(); });
+
+  const HISTORY_KEY = 'promptFactoryHistory';
+  const HISTORY_LIMIT = 30;
+  const historyBody = document.getElementById('history-body');
+  const historyClearBtn = document.getElementById('history-clear-btn');
+
+  function makeId(){
+    return (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2);
+  }
+
+  function loadHistory(){
+    try {
+      const arr = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+      return Array.isArray(arr) ? arr : [];
+    } catch(e) { return []; }
+  }
+
+  function saveHistory(list){
+    try { localStorage.setItem(HISTORY_KEY, JSON.stringify(list)); } catch(e) {}
+  }
+
+  function addHistoryEntry(entry){
+    const list = loadHistory();
+    list.unshift(entry);
+    saveHistory(list.slice(0, HISTORY_LIMIT));
+    renderHistory();
+  }
+
+  function removeHistoryEntry(id){
+    saveHistory(loadHistory().filter(e => e.id !== id));
+    renderHistory();
+  }
+
+  function formatHistoryTime(ts){
+    try {
+      return new Date(ts).toLocaleString('ko-KR', { month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit' });
+    } catch(e) { return ''; }
+  }
+
+  function historySummary(entry){
+    if (entry.mode === 'character'){
+      return escapeHtml(entry.subject) + ' → ' + escapeHtml(entry.styleWorld);
+    }
+    return escapeHtml(entry.idea) + (entry.style ? ' · ' + escapeHtml(entry.style) : '');
+  }
+
+  function historyPlatformLabels(entry){
+    return entry.mode === 'character' ? entry.item.label : entry.items.map(it => it.label).join(', ');
+  }
+
+  function historyTicketMarkup(label, group, stamp, promptText, dialect){
+    return (
+      '<div class="ticket">' +
+        '<div class="ticket-top">' +
+          '<div><div class="ticket-plat">' + escapeHtml(label) + '</div><div class="ticket-group">' + escapeHtml(group) + '</div></div>' +
+          '<div class="stamp">' + stamp + '</div>' +
+        '</div>' +
+        '<div class="ticket-body">' + escapeHtml(promptText) + '</div>' +
+        '<div class="perf"></div>' +
+        '<div class="ticket-foot">' +
+          '<div class="dialect">' + escapeHtml(dialect) + '</div>' +
+          '<button class="copy-btn" type="button">' + copyIcon() + '<span>복사</span></button>' +
+        '</div>' +
+      '</div>'
+    );
+  }
+
+  function historyTicketsHtml(entry){
+    if (entry.mode === 'character'){
+      return '<div class="tickets">' + historyTicketMarkup(
+        entry.item.label, '캐릭터 변환', entry.item.stamp, entry.item.prompt,
+        '사진을 첨부한 뒤 이 프롬프트를 이어서 붙여넣으세요'
+      ) + '</div>';
+    }
+    return '<div class="tickets">' + entry.items.map(it =>
+      historyTicketMarkup(it.label, it.group, it.stamp, it.prompt, it.dialect)
+    ).join('') + '</div>';
+  }
+
+  function renderHistory(){
+    const list = loadHistory();
+    historyClearBtn.hidden = list.length === 0;
+    if (list.length === 0){
+      historyBody.innerHTML = '<div class="history-empty">아직 저장된 생성 기록이 없어요.</div>';
+      return;
+    }
+    historyBody.innerHTML = '<div class="history-list">' + list.map(entry => (
+      '<div class="history-item" data-hid="' + entry.id + '">' +
+        '<div class="history-item-top">' +
+          '<div>' +
+            '<div class="history-meta">' +
+              '<span class="history-mode">' + (entry.mode === 'character' ? '캐릭터 프사' : '일반 생성') + '</span>' +
+              '<span class="history-time">' + formatHistoryTime(entry.createdAt) + '</span>' +
+            '</div>' +
+            '<div class="history-summary">' + historySummary(entry) + '</div>' +
+            '<div class="history-platforms">' + escapeHtml(historyPlatformLabels(entry)) + '</div>' +
+          '</div>' +
+          '<div class="history-actions">' +
+            '<button type="button" class="history-toggle-btn">결과 보기</button>' +
+            '<button type="button" class="history-del-btn" aria-label="이 기록 삭제">삭제</button>' +
+          '</div>' +
+        '</div>' +
+        '<div class="history-detail" hidden></div>' +
+      '</div>'
+    )).join('') + '</div>';
+
+    historyBody.querySelectorAll('.history-item').forEach(itemEl => {
+      const id = itemEl.dataset.hid;
+      const toggleBtn = itemEl.querySelector('.history-toggle-btn');
+      const detailEl = itemEl.querySelector('.history-detail');
+      const delBtn = itemEl.querySelector('.history-del-btn');
+      toggleBtn.addEventListener('click', () => {
+        const willShow = detailEl.hidden;
+        if (willShow && !detailEl.dataset.rendered){
+          const entry = loadHistory().find(e => e.id === id);
+          if (!entry) return;
+          detailEl.innerHTML = historyTicketsHtml(entry);
+          wireCopyButtons(detailEl);
+          detailEl.dataset.rendered = '1';
+        }
+        detailEl.hidden = !willShow;
+        toggleBtn.textContent = willShow ? '접기' : '결과 보기';
+      });
+      delBtn.addEventListener('click', () => removeHistoryEntry(id));
+    });
+  }
+
+  historyClearBtn.addEventListener('click', () => {
+    if (!confirm('저장된 생성 기록을 모두 삭제할까요?')) return;
+    saveHistory([]);
+    renderHistory();
+  });
+
+  renderHistory();
 })();
 </script>
 </body>
